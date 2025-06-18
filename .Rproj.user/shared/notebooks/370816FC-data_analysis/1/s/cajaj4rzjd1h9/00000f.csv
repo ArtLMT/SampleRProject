@@ -1,0 +1,4 @@
+"0","    install.packages(""skimr"")"
+"2","G1;H1;Errorh in install.packages : Updating loaded packages
+g"
+"0","    library(skimr)"

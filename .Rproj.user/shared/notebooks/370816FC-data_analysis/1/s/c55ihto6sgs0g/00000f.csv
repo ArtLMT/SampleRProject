@@ -1,0 +1,6 @@
+"0","    num_cols <- c(""x"", ""x2"", ""x3"")"
+"0","    cat_cols <- y"
+"2","G1;H1;Errorh: object 'y' not found
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"

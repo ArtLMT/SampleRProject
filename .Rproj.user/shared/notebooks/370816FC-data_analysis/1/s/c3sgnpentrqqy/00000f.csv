@@ -1,0 +1,15 @@
+"0","    str(df) # Structure of dataset"
+"1","spc_tbl_ [100 × 4] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
+ $ x : num [1:100] 2.216 -0.181 1.697 1.655 1.068 ...
+ $ x2: num [1:100] 4.77 4.1 2.33 2.46 1.05 ...
+ $ x3: num [1:100] -4.87 6.98 3.92 0.75 3.35 ...
+ $ y : num [1:100] 0 1 0 0 1 1 1 1 1 1 ...
+ - attr(*, ""spec"")=
+  .. cols(
+  ..   x = [32mcol_double()[39m,
+  ..   x2 = [32mcol_double()[39m,
+  ..   x3 = [32mcol_double()[39m,
+  ..   y = [32mcol_double()[39m
+  .. )
+ - attr(*, ""problems"")=<externalptr> 
+"

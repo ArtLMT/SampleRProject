@@ -1,0 +1,21 @@
+"0","install.packages(""here"")"
+"2","G2;H2;WARNINGh: Rtools is required to build R packages but is not currently installed. Please download and install the appropriate version of Rtools before proceeding:
+
+https://cran.rstudio.com/bin/windows/Rtools/
+g"
+"2","G3;Installing package into ‘C:/Users/MTXT MSI/AppData/Local/R/win-library/4.5’
+(as ‘lib’ is unspecified)
+g"
+"2","G2;trying URL 'https://cran.rstudio.com/bin/windows/contrib/4.5/here_1.0.1.zip'
+g"
+"2","Content type 'application/zip' length 64994 bytes (63 KB)
+"
+"2","downloaded 63 KB
+
+"
+"1","package ‘here’ successfully unpacked and MD5 sums checked
+"
+"1","
+The downloaded binary packages are in
+	C:\Users\MTXT MSI\AppData\Local\Temp\Rtmp8gVoaT\downloaded_packages
+"

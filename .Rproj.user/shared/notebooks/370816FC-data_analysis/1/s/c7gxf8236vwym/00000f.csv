@@ -1,0 +1,6 @@
+"0","    names(df) # list all columns of dataset"
+"1","[1] ""x""  ""x2"" ""x3"" ""y"" 
+"
+"0","    colnames(df)"
+"1","[1] ""x""  ""x2"" ""x3"" ""y"" 
+"

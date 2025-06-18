@@ -1,0 +1,5 @@
+"0","df_pen <- penguins"
+"0","# dim(df_pen)"
+"0"," cat(""The dimension of dataset: number of columns"", ncol(df_pen), ""number of rows: "", nrow((df_pen)))"
+"1","The dimension of dataset: number of columns 8 number of rows:  344"
+"0","df_pen"

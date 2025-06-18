@@ -1,0 +1,6 @@
+"0","    df <- read_csv(""../data/data.csv"", show_col_types = FALSE)"
+"0","    #dim(df)"
+"0","    #nrow(df)"
+"0","    #ncol(df)"
+"0","    cat(""The dimension of dataset: number of columns"", ncol(df), ""number of rows: "", nrow((df)))"
+"1","The dimension of dataset: number of columns 4 number of rows:  100"

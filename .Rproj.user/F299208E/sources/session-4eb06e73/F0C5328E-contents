@@ -1,0 +1,311 @@
+---
+title: "TestProject"
+author: "Tran Le"
+date: "2025-06-17"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r}
+plot_numeric_columns <- function(df) {
+  # Loop through each column in the dataframe
+  for (col_name in names(df)) {
+    
+    # Check if the column is numeric
+    if (is.numeric(df[[col_name]])) {
+      
+      # Print a message to indicate which variable is being plotted
+      cat("Plotting:", col_name, "\n")
+      
+      # Set up 2 subplots: 1 row, 2 columns
+      par(mfrow = c(1, 2))  # 1 row, 2 plots side-by-side
+      
+      # Histogram
+      hist(df[[col_name]],
+           main = paste("Histogram of", col_name),
+           xlab = col_name,
+           col = "skyblue",
+           border = "white")
+      
+      # Boxplot
+      boxplot(df[[col_name]],
+              main = paste("Boxplot of", col_name),
+              horizontal = TRUE,
+              col = "lightgreen")
+      
+      # Reset plot layout back to default (1 plot per row)
+      par(mfrow = c(1, 1))
+      
+      # Pause between plots (optional, press Enter to continue)
+      readline(prompt = "Press [Enter] to continue...")
+    }
+  }
+}
+
+```
+
+```{r}
+data <- mtcars
+plot_numeric_columns(data)
+```
+
+```{r}
+plot_and_save_numeric_columns <- function(df, out_dir = "../outputs/univariate/test") {
+  # Create output directory if it doesn't exist
+  if (!dir.exists(out_dir)) {
+    dir.create(out_dir, recursive = TRUE)
+  }
+  
+  # Loop through each column
+  for (col_name in names(df)) {
+    
+    # Check if column is numeric
+    if (is.numeric(df[[col_name]])) {
+      cat("Saving plots for:", col_name, "\n")
+      
+      # Define file path to save the image
+      file_path <- file.path(out_dir, paste0(col_name, "_hist_box.png"))
+      
+      # Open PNG graphics device
+      png(filename = file_path, width = 1000, height = 500)
+      
+      # Plot histogram and boxplot side-by-side
+      par(mfrow = c(2, 1))  # 1 row, 2 columns
+      
+      # Histogram
+      hist(df[[col_name]],
+           main = paste("Histogram of", col_name),
+           xlab = col_name,
+           col = "blue",
+           border = "black")
+      
+      # Boxplot
+      boxplot(df[[col_name]],
+              main = paste("Boxplot of", col_name),
+              horizontal = TRUE,
+              col = "pink")
+      
+      # Close the PNG device to save the file
+      dev.off()
+      
+      # Reset plotting layout
+      par(mfrow = c(1, 1))
+    }
+  }
+  
+  cat("✅ All numeric plots saved to:", out_dir, "\n")
+}
+
+
+```
+
+```{r}
+plot_and_save_numeric_columns(data)
+
+```
+
+```{r}
+data()
+df <- penguins
+```
+
+```{r}
+sapply(df, class)
+str(df)
+df %>% summarise_all(~ sum(is.na(.)))
+```
+
+## 1. Convert Types
+
+```{r}
+df <- df %>%
+  mutate(
+    year = as.Date(paste0(year, "-01-01")),
+    sex = as.character(sex)
+  )
+summary(df)
+```
+
+```{r}
+colSums(is.na(df))
+sapply(df, class)
+```
+
+## 2. Identify Categorical and Numerical Variables
+
+```{r}
+cat_cols <- names(df)[sapply(df, is.factor) | sapply(df, is.character)]
+num_cols <- names(df)[sapply(df, is.numeric)]
+date_cols <- names(df[sapply(df, is.Date)])
+
+cat("Categorical:", cat_cols, "\n")
+cat("Numerical:", num_cols, "\n")
+cat("Datetime:", date_cols, "\n")
+```
+
+## 3. Fill Missing Values
+
+```{r}
+colSums(is.na(df))
+df %>% count(species)
+```
+
+```{r}
+df[df$species == "Adelie",]
+df_adelie <- df %>% filter(species == "Adelie") %>% select(island, bill_len) #using dplyr
+df_adelie %>% count(island)
+df %>% 
+  filter(species == "Adelie", island == "Torgersen") %>% 
+  select(bill_len) %>% 
+  sapply(function(x) mean(x, na.rm=TRUE))
+```
+
+```{r}
+df_adelie[is.na(df$bill_len), "bill_len"]
+```
+
+```{r}
+df_adelie %>%
+  filter(is.na(bill_len)) %>%
+  select(bill_len)
+```
+
+```{r}
+df_adelie <- df_adelie %>%
+  mutate(bill_len = ifelse(is.na(bill_len), median(bill_len, na.rm = TRUE), bill_len))
+
+```
+
+```{r}
+df %>%
+  filter(species == "Adelie", island == "Torgersen") %>%
+  summarise(mean_bill = mean(bill_dep, na.rm = TRUE))
+
+```
+
+```{r}
+# Check missing values
+colSums(is.na(df))
+
+# Fill numeric with median
+df[num_cols] <- df[num_cols] %>%
+  lapply(function(x) ifelse(is.na(x), median(x, na.rm = TRUE), x))
+
+# Fill categorical with mode
+fill_mode <- function(x) {
+  ux <- na.omit(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
+df[cat_cols] <- df[cat_cols] %>%
+  lapply(function(x) ifelse(is.na(x), fill_mode(x), x))
+
+```
+
+```{r}
+colSums(is.na(df))
+```
+
+## 4. EDA: Histogram + Boxplot
+
+```{r}
+for (col in num_cols) {
+  p1 <- ggplot(df, aes_string(x = col)) +
+    geom_histogram(fill = "steelblue", bins = 30) +
+    ggtitle(paste("Histogram of", col))
+
+  p2 <- ggplot(df, aes_string(y = col)) +
+    geom_boxplot(fill = "orange") +
+    ggtitle(paste("Boxplot of", col))
+
+  print(p1)
+  print(p2)
+}
+
+```
+
+```{r}
+plot_and_save_numeric_columns(df)
+```
+
+```{r}
+# Bar plots
+for (col in cat_cols) {
+  print(
+    ggplot(df, aes_string(x = col)) +
+      geom_bar(fill = "skyblue") +
+      ggtitle(paste("Bar Chart of", col)) +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  )
+}
+
+# Pie chart example for one variable
+df %>%
+  count(species) %>%
+  ggplot(aes(x = "", y = n, fill = species)) +
+  geom_col(width = 1) +
+  coord_polar(theta = "y") +
+  ggtitle("Pie Chart of Species") +
+  theme_void()
+
+```
+
+```{r}
+
+df %>%
+  group_by(year) %>%
+  summarise(count = n()) %>%
+  ggplot(aes(x = year, y = count)) +
+  geom_line(color = "blue") +
+  ggtitle("Visits Over Time") +
+  xlab("Date") + ylab("Count")
+```
+
+```{r}
+df %>%
+  group_by(species) %>%
+  summarise(
+    mean_bill_len = mean(bill_len, na.rm = TRUE),
+    mean_bill_dep = mean(bill_dep, na.rm = TRUE),
+    count_bill_len = sum(!is.na(bill_len))
+  )
+
+```
+
+```{r}
+df %>%
+  group_by(species) %>%
+  select(bill_len, bill_dep) %>%
+  sapply(function(x) mean(x, na.rm=TRUE))
+
+```
+
+```{r}
+df %>%
+  group_by(species) %>%
+  summarise(across(c(bill_len, bill_dep), ~ mean(.x, na.rm = TRUE)))
+
+```

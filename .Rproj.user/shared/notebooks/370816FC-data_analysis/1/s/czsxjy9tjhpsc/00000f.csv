@@ -1,0 +1,4 @@
+"0","sapply(penguins, class) # Check data type"
+"1","    species      island    bill_len    bill_dep flipper_len   body_mass         sex        year 
+   ""factor""    ""factor""   ""numeric""   ""numeric""   ""integer""   ""integer""    ""factor""   ""integer"" 
+"

@@ -1,0 +1,4 @@
+"0","    numerical_cols <- names(df)[sapply(df, is.numeric)]"
+"0","    numerical_cols"
+"1","[1] ""x""  ""x2"" ""x3"" ""y"" 
+"

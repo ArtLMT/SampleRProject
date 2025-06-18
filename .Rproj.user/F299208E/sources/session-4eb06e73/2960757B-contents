@@ -1,0 +1,188 @@
+---
+title: "Web Analytics with R - Clickstream Data Analysis"
+author: "COMP1810 Practical"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 📦 Step 1: Load Packages
+
+```{r}
+install.packages("here")
+```
+
+```{r}
+#install.packages(c("tidyverse", "readr", "dplyr", "ggplot2", "lubridate"))
+library(tidyverse)
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(here)
+library(Hmisc)
+```
+
+## 📥 Step 2: Import Clickstream Data
+
+```{r}
+# Replace with actual path to your file
+data <- read_csv(here("data", "data_copy.csv"))
+head(data)
+str(data)
+```
+
+```{r}
+data1 <- read_csv("../data/data_copy.csv")
+head(data1)
+spec(data1)
+```
+
+## 📊 Step 3: Data Exploration
+
+```{r}
+dim(data)
+summary(data)
+colSums(is.na(data))
+data %>% count(y)
+```
+
+```{r}
+# The method 1 to explore data
+summary(data)
+colSums(is.na(data))
+data %>% count(y) #distinct value
+data %>% summarise_all(~ sum(is.na(.))) #check null
+```
+
+```{r}
+# 1. get dimensions
+cat(nrow(data), ncol(data))
+length(data)
+```
+
+```{r}
+# 2. summary stats
+# 2.1 base R
+str(data) #Structure: data types and example values
+sapply(data, class) #Class of each column
+# 2.2 tidyverse-style
+data %>% glimpse() #Compact summary of data
+data %>% summarise_all(median, na.rm=TRUE)
+# 2.3 using Hmisc for descriptive stats
+describe(data$x)
+```
+
+```{r}
+# Count unique values in column
+table(data$y) # base R
+data %>% group_by(y) %>% summarise(count = n()) #dplyr version
+```
+
+```{r}
+install.packages("skimr")
+library(skimr)
+one_skim_df <- skim(data)
+one_skim_df
+```
+
+```{r}
+names(one_skim_df)
+cat(colnames(one_skim_df))
+```
+
+```{r}
+for (col in colnames(one_skim_df)){
+  print(paste("Column:", col))
+  print(class(one_skim_df[[col]]))
+}
+```
+
+```{r}
+for (col in names(data)) {
+  if (is.numeric(data[[col]])) {
+    print(paste("Summary of", col))
+    print(summary(data[[col]]))
+  }
+}
+```
+
+```{r}
+for (col in names(data)) {
+  cat("===", col, "===\n")
+  cat("Type:", class(data[[col]]), "\n\n")
+}
+
+```
+
+## 🧹 Step 4: Data Cleaning
+
+```{r}
+click_data$timestamp <- ymd_hms(click_data$timestamp)
+clean_data <- click_data %>% filter(!is.na(Page))
+```
+
+## 📈 Step 5: Visualization
+
+### Time Spent on Page - Histogram
+
+```{r}
+ggplot(clean_data, aes(x = TimeOnPage)) +
+  geom_histogram(binwidth = 10, fill = "skyblue", color = "black") +
+  labs(title = "Time Spent on Page", x = "Seconds", y = "Count")
+```
+
+### Time on Page by Device - Boxplot
+
+```{r}
+ggplot(clean_data, aes(x = Device, y = TimeOnPage)) +
+  geom_boxplot(fill = "lightgreen") +
+  labs(title = "Time on Page by Device Type", x = "Device", y = "Time (s)")
+```
+
+### Daily Page Views - Line Chart
+
+```{r}
+clean_data %>%
+  mutate(date = as.Date(timestamp)) %>%
+  count(date) %>%
+  ggplot(aes(x = date, y = n)) +
+  geom_line() +
+  labs(title = "Daily Page Views", x = "Date", y = "Views")
+```
+
+## 🧠 Step 6: Web KPI Calculations
+
+### Bounce Rate
+
+```{r}
+bounce_rate <- clean_data %>%
+  group_by(SessionID) %>%
+  summarise(pages = n()) %>%
+  summarise(rate = mean(pages == 1)) %>%
+  pull(rate)
+
+bounce_rate
+```
+
+### Average Session Duration
+
+```{r}
+avg_session_time <- clean_data %>%
+  group_by(SessionID) %>%
+  summarise(session_duration = sum(TimeOnPage, na.rm = TRUE)) %>%
+  summarise(avg_duration = mean(session_duration))
+
+avg_session_time
+```
+
+## ✅ Conclusion
+
+This notebook demonstrated how to perform clickstream data analysis using R, from loading and cleaning data to exploring and visualizing web KPIs.
+
+$$
+\mu = \dfrac{\displaystyle\sum_{i=1}^N x_i}{N
+}
+$$

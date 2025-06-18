@@ -1,0 +1,4 @@
+"0","colSums(is.na(df_pen)) # check missing values"
+"1","    species      island    bill_len    bill_dep flipper_len   body_mass         sex        year 
+          0           0           2           2           2           2          11           0 
+"
