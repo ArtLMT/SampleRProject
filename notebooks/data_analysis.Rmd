@@ -202,8 +202,101 @@ cat("The number of dublicated data in penguins: ", sum(duplicated(df_pen)))
 
 Conclusion: beside having missing datas (`11 sex, 2 bill_len, 2 bill_dep, 2 fipper_len, 2 body_mas`).
 
-2.  The variables: based on eyeballing, checking the type, checking unique value
-3.  
+1.  The variable Cateorical variable: Numerical Variable:
+
+2.  The issues
+
+```{r}
+# Select penguins with missing value
+penguins_with_na <- df_pen %>% 
+  filter(if_any(everything(), is.na))
+# View result
+penguins_with_na
+```
+
+```{r}
+# find which have more
+penguins %>%
+  filter(!is.na(sex)) %>%
+  count(sex) %>%
+  mutate(percent = round(n / sum(n) * 100, 2))
+```
+
+### Cleaning the data
+
+```{r}
+df_pen$year <- as.Date(paste0(df_pen$year, "-01-01"))
+#df_pen$year <- as.POSIXct(paste0(df$year, "-01-01"), format = "%Y-%m-%d")
+```
+
+```{r}
+str(df_pen$year)
+# hoặc
+head(df_pen$year)
+```
+
+```{r}
+colSums(is.na(df_pen))
+```
+
+```{r}
+df_pen_adeli_torgesen <- df_pen %>% filter(species=="Adelie", island=="Torgersen")
+df_pen_adeli_torgesen
+```
+
+```{r}
+df_pen_adeli_torgersen <- df_pen %>%
+  filter(species == "Adelie", island == "Torgersen") %>%
+  summarise(
+    bill_len_mean = mean(bill_len, na.rm = TRUE),
+    bill_len_median = median(bill_len, na.rm = TRUE)
+  )
+
+df_pen_adeli_torgersen
+```
+
+```{r}
+bill_len_mean <- 38.95
+df_pen_adeli_torgersen[is.na(df_pen_adeli_torgersen$bill_len), "bill_len"] <- bill_len_mean
+bill_len_mean
+```
+
+mutate function: create, modify columns
+
+-   for example: with numerical variables, choose to fill missing values by using mean
+
+```{r}
+
+
+df_pen <- df_pen %>%
+  group_by(species, island) %>%
+  mutate(
+    bill_len_mean = mean(bill_len, na.rm = TRUE),
+    bill_len_median = median(bill_len, na.rm = TRUE)
+  ) %>%
+  ungroup()
+```
+
+```{r}
+#fill missing value using mutate() and if else()
+
+df_pen <- df_pen %>%
+  mutate(
+    bill_dep_clean = ifelse(is.na(bill_dep), 
+                            mean(bill_dep, na.rm = TRUE), 
+                            bill_dep)
+  )
+```
+
+```{r}
+num_cols <- names(df_pen)[sapply(df_pen, is.numeric)]
+
+df_pen[num_cols] <- df_pen[num_cols] %>%
+  lapply(function(x) ifelse(is.na(x), median(x, na.rm = TRUE), x)) %>%
+  as.data.frame()
+
+df_pen
+```
 
 ## Step 2: EDA
 

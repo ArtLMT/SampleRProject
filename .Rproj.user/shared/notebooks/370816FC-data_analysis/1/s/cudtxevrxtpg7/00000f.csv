@@ -1,5 +1,0 @@
-"0","any(duplicated(df_pen)) # check duplicate"
-"1","[1] FALSE
-"
-"0","cat(""The number of dublicated data in penguins: "", sum(duplicated(df_pen)))"
-"1","The number of dublicated data in penguins:  0"

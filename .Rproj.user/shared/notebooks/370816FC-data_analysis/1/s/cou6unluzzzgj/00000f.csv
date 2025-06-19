@@ -1,4 +1,0 @@
-"0","names(df_pen) # list all columns of dataset"
-"1","[1] ""species""     ""island""      ""bill_len""    ""bill_dep""    ""flipper_len"" ""body_mass""   ""sex""         ""year""       
-"
-"0","# colnames(df_pen)"

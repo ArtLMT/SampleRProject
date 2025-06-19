@@ -1,0 +1,233 @@
+# COMP1810 - Practicing data analysis
+
+## Step 0: Loading packages
+
+```{r}
+library(tidyverse)
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(Hmisc)
+```
+
+## Step 1: Read & Understand Data
+
+3 Question to understand about data:
+
+1.  What's the shape of the data? The dimension
+
+```{r}
+# data() # check all the dataset
+df <- ChickWeight # get the dataset and asign it into an variable?
+cat("The dimension of dataset: number of columns", ncol(df), "number of rows: ", nrow((df)))
+```
+
+2.  What variables are categorical, numerical, datetime?
+
+```{r}
+str(df) # Structure of dataset
+```
+
+```{r}
+describe(df) # provide description for each column
+```
+
+```{r}
+sapply(df, class)
+```
+
+**Conclusion**: This dataset have 2 numerical variables `weight, time`, and 2 categorical variables `Chick` (with an ordered factor with 50 levels) and `diet` (with factor with 4 levels). And there's no datetime variables in this dataset because the Time is in numerical data type (in days which in reasonable enough as its the count for days).
+
+3.  Do we have any issues in this dataset?
+
+    missing values?
+
+    inconsistent types, values?
+
+    duplicate values?
+
+```{r}
+    names(df) # list all columns of dataset
+    # colnames(df)
+```
+
+```{{r}}
+# check missing values
+colSums(is.na(df))
+```
+
+```{r}
+# check duplicated value
+any(duplicated(df))
+```
+
+```{r}
+library(skimr)
+skim(df)
+```
+
+**Conclusion:** This dataset have no issues, it's clean.
+
+## Step 2: EDA
+
+Univariate analysis
+
+### Numerical Data
+
+analyze numerical data by Selecting them, Getting summary statistics, Plotting their distributions.
+We analyze the numerical columns `weight` and `Time` in the dataset. Summary statistics show:
+
+```{r}
+num_df <- select_if(df, is.numeric)
+summary(num_df) # get statistic of numerical variable in the dataset
+```
+
+Distribution of them:
+
+#### Weigth Distribution
+
+```{r}
+# Histogram for weight
+ggplot(df, aes(x = weight)) + # Set which column goes on the x-axis
+  geom_histogram(binwidth = 10, fill = "skyblue", color = "black") + # Add the actual graph type (bars, lines, etc.)
+  labs(title = "Distribution of Chick Weights")
+
+ggplot(df, aes(x = weight, fill = Diet)) +
+  geom_histogram(binwidth = 10, alpha = 0.6, position = "identity")
+
+ggplot(df, aes(x = Diet, y = weight)) +
+  geom_boxplot(fill = "lightblue") + # Boxplot is better for grouped comparation
+  labs(title = "Weight Distribution by Diet")
+
+ggplot(df, aes(x = weight)) +
+  geom_density(fill = "skyblue", alpha = 0.5) +
+  labs(title = "Density of Chick Weights")
+```
+
+The weight distribution is right-skewed, meaning most chicks have lower weights but a few have high weights. Using color grouping `(fill = Diet)`, we can compare how the weight or time distribution varies across different diets. This allows us to visually assess whether certain diets lead to higher or lower chick weights.
+
+#### Time Distribution
+
+```{r}
+# Histogram for Time
+ggplot(df, aes(x = Time)) +
+  geom_histogram(binwidth = 2, fill = "lightgreen", color = "black") +
+  labs(title = "Distribution of Time (Days)")
+
+ggplot(df, aes(x = Time, fill = Diet)) +
+  geom_histogram(binwidth = 10, alpha = 0.6, position = "identity")
+
+ggplot(df, aes(x = Time)) +
+  geom_density(fill = "lightgreen", alpha = 0.5) +
+  labs(title = "Density of Chick Time")
+```
+
+The time distribution is uniform (or slightly right-skewed), since chicks were weighed at regular intervals over time.
+
+**Conclusion:** Visualizing `weight` and `Time` by `Diet` shows how different diets may influence growth patterns.
+
+### Categorical Data
+
+For categorical variables, EDA usually includes:
+
+-   Count of unique values (table())
+
+-   Check for imbalance (e.g., are some categories more common?)
+
+-   Visualize with bar plots
+
+-   Interpret patterns (e.g., are diets balanced?)
+
+We analyze the categorical columns `Chick` and `Diet` in the dataset.
+
+#### The frequency of each unique values:
+
+```{r}
+table(df$Chick)
+table(df$Diet)
+```
+
+#### Bar Plot for Diet
+
+Each chick is measured multiple times, so Chick will also appear multiple times — the Diet bar chart shows ***number of observations***, not number of unique chicks.
+
+```{r}
+ggplot(df, aes(x = Diet)) +
+  geom_bar(fill = "coral", color = "black") +
+  labs(title = "Count of Observations per Diet",
+       x = "Diet Type", y = "Number of Observations")
+
+ggplot(df, aes(x = weight)) +
+  geom_histogram(binwidth = 10, fill = "skyblue", color = "black") +
+  facet_wrap(~Diet) # For separate plots per Diet
+```
+
+To see how many chick was feeded with each type of diet:
+
+```{r}
+# Remove duplicates: one row per Chick
+chick_diet <- df %>%
+  select(Chick, Diet) %>% # Select only Chick and Diet column in dataset
+  distinct() # Remove duplicate value
+
+# Count how many chicks in each Diet
+chick_diet_summary <- chick_diet %>%
+  group_by(Diet) %>% # group by diet (diet 1 2 3 4)
+  summarise(n_chicks = n()) # Count how many chicks are in each diet → n() counts rows per group.
+
+# show total of chicks per diet with diagram
+ggplot(chick_diet_summary, aes(x = Diet, y = n_chicks)) + 
+  geom_col(fill = "seagreen", color = "black") +
+ labs(title = "Number of Unique Chicks per Diet",
+       x = "Diet Type", y = "Number of Chicks")
+```
+
+To check whether if the groups are balance (which can be seen by the diagram above is not)
+
+```{r}
+chick_diet_summary %>%
+  mutate(percent = round(n_chicks / sum(n_chicks) * 100, 1))
+```
+
+**Conclusion:**
+
+-   There's `50 chicks` in the dataset, they are assigned to `1 of the 4 diet group` and being observed over multiple days
+
+-   The diet groups is not balanced: The first diet group have twice as each of the rest diet, tho those diet group is balanced with each other (10 chick per diet)
+
+### Bivariate analysis
+
+To study about the relationship between two variables
+
+#### Mean weight per diet
+
+To show which diet give the most value in inceasing weight of the chicks
+
+```{r}
+df %>%
+  group_by(Chick) %>%
+  filter(Time == max(Time)) %>%     # Get the last weight of each Chick
+  ungroup() %>%
+  group_by(Diet) %>%
+  summarise(mean_final_weight = mean(weight))
+```
+
+#### Weight over Time per Diet
+
+This observation will show which diet increase the weight of the chick most quickly
+
+```{r}
+ggplot(df, aes(x = Time, y = weight, color = Diet)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 1.2) +
+  labs(title = "Chick Weight Over Time by Diet", x = "Time (days)", y = "Weight (grams)")
+
+# df %>%
+#  group_by(Diet, Time) %>%
+#  summarise(mean_weight = mean(weight), .groups = "drop") %>%
+#  ggplot(aes(x = Time, y = mean_weight, color = Diet)) +
+#  geom_line(size = 1.2) +
+#  geom_point() +
+#  labs(title = "Mean Chick Weight Over Time per Diet", x = "Time (days)", y = "Mean Weight")
+```
